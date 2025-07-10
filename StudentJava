@@ -1,0 +1,44 @@
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.DoubleStream;
+
+public class Student {
+    private final String name;
+    private final List<Integer> scores;   // each test / assignment mark
+
+    public Student(String name) {
+        this.name = name.trim();
+        this.scores = new ArrayList<>();
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void addScore(int score) {
+        scores.add(score);
+    }
+
+    public double getAverage() {
+        return scores.isEmpty()
+                ? 0
+                : scores.stream().mapToInt(Integer::intValue).average().orElse(0);
+    }
+
+    public int getHighest() {
+        return scores.isEmpty() ? 0 : Collections.max(scores);
+    }
+
+    public int getLowest() {
+        return scores.isEmpty() ? 0 : Collections.min(scores);
+    }
+
+    @Override
+    public String toString() {
+        return String.format(
+            "%-15s | %-8.2f | %-6d | %-6d | %s",
+            name, getAverage(), getHighest(), getLowest(), scores
+        );
+    }
+}
