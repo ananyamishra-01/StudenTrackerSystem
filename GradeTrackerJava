@@ -1,0 +1,117 @@
+import java.util.ArrayList;
+import java.util.InputMismatchException;
+import java.util.List;
+import java.util.Scanner;
+
+public class StudentGradeTracker {
+
+    private final List<Student> students = new ArrayList<>();
+    private final Scanner sc = new Scanner(System.in);
+
+    public static void main(String[] args) {
+        new StudentGradeTracker().run();
+    }
+
+    private void run() {
+        boolean running = true;
+        while (running) {
+            printMenu();
+            switch (readInt("Choose an option: ")) {
+                case 1 -> addStudent();
+                case 2 -> addScoreToStudent();
+                case 3 -> printSummaryReport();
+                case 4 -> running = false;
+                default -> System.out.println("❗ Invalid option. Try again.");
+            }
+        }
+        System.out.println("\nThank you for using Student Grade Tracker. Bye!");
+    }
+
+    // ---------- Menu helpers ----------
+    private void printMenu() {
+        System.out.println("""
+            ───────────────────────────────
+            1. Add new student
+            2. Record a score for a student
+            3. Show summary report
+            4. Exit
+            ───────────────────────────────""");
+    }
+
+    private int readInt(String prompt) {
+        while (true) {
+            System.out.print(prompt);
+            try {
+                return sc.nextInt();
+            } catch (InputMismatchException e) {
+                System.out.println("Please enter a whole number.");
+                sc.next(); // clear invalid input
+            }
+        }
+    }
+
+    // ---------- Core actions ----------
+    private void addStudent() {
+        System.out.print("Enter student name: ");
+        sc.nextLine();               // eat line‐feed left by nextInt
+        String name = sc.nextLine();
+        if (name.isBlank()) {
+            System.out.println("Name cannot be empty.");
+            return;
+        }
+        students.add(new Student(name));
+        System.out.println("✅ Student added.");
+    }
+
+    private void addScoreToStudent() {
+        if (students.isEmpty()) {
+            System.out.println("No students yet. Add a student first.");
+            return;
+        }
+        listStudentsShort();
+        int idx = readInt("Select student # (starting at 1): ") - 1;
+        if (idx < 0 || idx >= students.size()) {
+            System.out.println("Invalid student number.");
+            return;
+        }
+        int score = readInt("Enter score (0–100): ");
+        if (score < 0 || score > 100) {
+            System.out.println("Score must be between 0 and 100.");
+            return;
+        }
+        students.get(idx).addScore(score);
+        System.out.println("✅ Score recorded.");
+    }
+
+    private void printSummaryReport() {
+        if (students.isEmpty()) {
+            System.out.println("No data to display.");
+            return;
+        }
+        System.out.println("\n────────── Summary Report ──────────");
+        System.out.printf("%-15s | %-8s | %-6s | %-6s | %s%n",
+                "Student", "Average", "High", "Low", "All Scores");
+        System.out.println("────────────────────────────────────────────────────");
+        students.forEach(System.out::println);
+
+        // overall stats
+        double overallAvg = students.stream()
+                .mapToDouble(Student::getAverage)
+                .average().orElse(0);
+        int overallHigh = students.stream()
+                .mapToInt(Student::getHighest).max().orElse(0);
+        int overallLow = students.stream()
+                .mapToInt(Student::getLowest).min().orElse(0);
+        System.out.println("────────────────────────────────────────────────────");
+        System.out.printf("Class Avg: %.2f | Overall High: %d | Overall Low: %d%n",
+                overallAvg, overallHigh, overallLow);
+        System.out.println("────────────────────────────────────────────────────\n");
+    }
+
+    private void listStudentsShort() {
+        System.out.println("\nCurrent students:");
+        for (int i = 0; i < students.size(); i++) {
+            System.out.printf("  %d. %s%n", i + 1, students.get(i).getName());
+        }
+    }
+}
